@@ -1,27 +1,27 @@
 # Unscroll — Working Memory & Development Log
 
 ## Current Objective & Phase
-- **Phase:** Environment Setup & Gradle Scaffold Initialization (Phase 1 & 2)
-- **Status:** Planning complete; preparing toolchain & Kotlin + Jetpack Compose scaffold setup.
+- **Phase:** Data & Repository Layer Implementation (Tranche 2)
+- **Status:** Tranche 1 (Toolchain, Gradle Scaffold, Domain Models & Contracts, Use Cases, 50 Curated Insults Data Source) complete and committed to git.
 
 ## Architecture & Context State
 - **Pattern:** Clean Architecture (Domain, Data, Service, UI, DI via `AppContainer`).
 - **Design System:** Jetpack Compose Material3 + Ambient Blurred Glassmorphic Overlay (`taste-skill` / `high-end-visual-design`).
-- **Insult Engine:** Offline local `InsultRepository` (50 sequential time-waste & potential insults).
+- **Insult Engine:** Offline local `InsultRepository` (50 sequential time-waste & potential insults with `{name}` dynamic placeholders).
 - **Tracking:** `AccessibilityService` (`TYPE_VIEW_SCROLLED`) + `UsageStatsManager` foreground monitoring loop.
 
 ## File & Component Checklist
-- [ ] Toolchain Setup (JDK 17, Android SDK CLI, Platform 34)
-- [ ] Root Gradle Scaffold (`build.gradle.kts`, `settings.gradle.kts`, `app/build.gradle.kts`)
-- [ ] `AndroidManifest.xml` & `accessibility_service_config.xml`
-- [ ] `domain/model` (`AppUsageInfo.kt`, `Insult.kt`, `UserProfile.kt`, `SessionStats.kt`)
-- [ ] `domain/repository` contracts (`InsultRepository.kt`, `SessionStatsRepository.kt`, `SettingsRepository.kt`)
-- [ ] `domain/usecase` (`GetNextInsultUseCase.kt` with `{name}` placeholder substitution, `CalculateReelHeuristicsUseCase.kt`, `TrackScrollEventUseCase.kt`, `EvaluateOverlayTriggerUseCase.kt`)
+- [x] Toolchain & Git Init Setup (`.gitignore`, Gradle CLI)
+- [x] Root Gradle Scaffold (`build.gradle.kts`, `settings.gradle.kts`, `app/build.gradle.kts`, `gradle/libs.versions.toml`)
+- [x] `domain/model` (`AppUsageInfo.kt`, `Insult.kt`, `UserProfile.kt`, `SessionStats.kt`)
+- [x] `domain/repository` contracts (`InsultRepository.kt`, `SessionStatsRepository.kt`, `SettingsRepository.kt`)
+- [x] `domain/usecase` (`GetNextInsultUseCase.kt`, `CalculateReelHeuristicsUseCase.kt`, `TrackScrollEventUseCase.kt`, `EvaluateOverlayTriggerUseCase.kt`)
+- [x] `data/source/CuratedInsultsDataSource.kt` (50 curated insults with `{name}` placeholders)
 - [ ] `di/AppContainer.kt`
-- [ ] `data/source/CuratedInsultsDataSource.kt` (50 curated insults with `{name}` placeholders)
 - [ ] `data/repository/LocalInsultRepositoryImpl.kt`
 - [ ] `data/repository/MemorySessionStatsRepositoryImpl.kt`
 - [ ] `data/repository/DataStoreSettingsRepositoryImpl.kt` (stores user name, target apps, interval)
+
 - [ ] `service/accessibility/ScrollTrackerAccessibilityService.kt`
 - [ ] `service/monitor/SessionMonitorForegroundService.kt`
 - [ ] `service/overlay/WindowManagerOverlayController.kt`
