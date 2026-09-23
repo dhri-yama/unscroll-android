@@ -1,8 +1,8 @@
 # Unscroll — Working Memory & Development Log
 
 ## Current Objective & Phase
-- **Phase:** Ambient UI & Compose Overlay Implementation (Tranche 4)
-- **Status:** Tranche 3 (AndroidManifest permissions & declaration, accessibility_service_config XML, ScrollTrackerAccessibilityService, SessionMonitorForegroundService, WindowManagerOverlayController) complete and committed to git.
+- **Phase:** Onboarding & Settings Screens Implementation (Tranche 5)
+- **Status:** Tranche 4 (UnscrollTheme, Color palette, Typography, AmbientBackground, GlassmorphicPillButton, StatCounter, AmbientOverlayScreen matching reference image) complete, compiled, and committed to git.
 
 ## Architecture & Context State
 - **Pattern:** Clean Architecture (Domain, Data, Service, UI, DI via `AppContainer`).
@@ -11,7 +11,7 @@
 - **Tracking:** `AccessibilityService` (`TYPE_VIEW_SCROLLED`) + `UsageStatsManager` foreground monitoring loop.
 
 ## File & Component Checklist
-- [x] Toolchain & Git Init Setup (`.gitignore`, Gradle CLI)
+- [x] Toolchain & Git Init Setup (`.gitignore`, Gradle CLI, Android SDK 34)
 - [x] Root Gradle Scaffold (`build.gradle.kts`, `settings.gradle.kts`, `app/build.gradle.kts`, `gradle/libs.versions.toml`)
 - [x] `domain/model` (`AppUsageInfo.kt`, `Insult.kt`, `UserProfile.kt`, `SessionStats.kt`)
 - [x] `domain/repository` contracts (`InsultRepository.kt`, `SessionStatsRepository.kt`, `SettingsRepository.kt`)
@@ -25,9 +25,13 @@
 - [x] `service/accessibility/ScrollTrackerAccessibilityService.kt`
 - [x] `service/monitor/SessionMonitorForegroundService.kt`
 - [x] `service/overlay/WindowManagerOverlayController.kt`
-- [ ] `ui/theme/` (`Color.kt`, `Theme.kt`, `Type.kt`)
-- [ ] `ui/components/` (`AmbientBackground.kt`, `GlassmorphicPillButton.kt`, `StatCounter.kt`)
-- [ ] `ui/overlay/AmbientOverlayScreen.kt` & `AmbientOverlayViewModel.kt`
+- [x] `ui/theme/` (`Color.kt`, `Theme.kt`, `Type.kt`)
+- [x] `ui/components/` (`AmbientBackground.kt`, `GlassmorphicPillButton.kt`, `StatCounter.kt`)
+- [x] `ui/overlay/AmbientOverlayScreen.kt` (matching reference image)
+- [ ] `ui/onboarding/OnboardingFlowScreen.kt` & steps (`WelcomeStep`, `NamePersonalizationStep`, `TargetAppPickerStep`, `PermissionsWizardStep`, `CadenceSetupStep`)
+- [ ] `ui/main/screens/` (`UserProfileSettingsScreen.kt`, `TargetAppsSettingsScreen.kt`, `CadenceSettingsScreen.kt`, `PermissionsDashboardScreen.kt`)
+- [ ] `ui/main/MainActivity.kt`
+
 
 
 
