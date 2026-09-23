@@ -1,14 +1,15 @@
 # Unscroll — Working Memory & Development Log
 
 ## Current Objective & Phase
-- **Phase:** Onboarding & Settings Screens Implementation (Tranche 5)
-- **Status:** Tranche 4 (UnscrollTheme, Color palette, Typography, AmbientBackground, GlassmorphicPillButton, StatCounter, AmbientOverlayScreen matching reference image) complete, compiled, and committed to git.
+- **Phase:** Project Complete — All Tranches Built & Verified (Debug APK Assembled)
+- **Status:** Tranche 5 (Onboarding Flow, Step Wizard, User Profile Settings, Target App Picker, Cadence Selector, Permissions Dashboard, MainActivity Router, and Debug APK build) complete, verified, and committed to git.
 
 ## Architecture & Context State
 - **Pattern:** Clean Architecture (Domain, Data, Service, UI, DI via `AppContainer`).
 - **Design System:** Jetpack Compose Material3 + Ambient Blurred Glassmorphic Overlay (`taste-skill` / `high-end-visual-design`).
 - **Insult Engine:** Offline local `InsultRepository` (50 sequential time-waste & potential insults with `{name}` dynamic placeholders).
 - **Tracking:** `AccessibilityService` (`TYPE_VIEW_SCROLLED`) + `UsageStatsManager` foreground monitoring loop.
+- **Build Artifact:** `app/build/outputs/apk/debug/app-debug.apk` (17.1 MB).
 
 ## File & Component Checklist
 - [x] Toolchain & Git Init Setup (`.gitignore`, Gradle CLI, Android SDK 34)
@@ -28,9 +29,11 @@
 - [x] `ui/theme/` (`Color.kt`, `Theme.kt`, `Type.kt`)
 - [x] `ui/components/` (`AmbientBackground.kt`, `GlassmorphicPillButton.kt`, `StatCounter.kt`)
 - [x] `ui/overlay/AmbientOverlayScreen.kt` (matching reference image)
-- [ ] `ui/onboarding/OnboardingFlowScreen.kt` & steps (`WelcomeStep`, `NamePersonalizationStep`, `TargetAppPickerStep`, `PermissionsWizardStep`, `CadenceSetupStep`)
-- [ ] `ui/main/screens/` (`UserProfileSettingsScreen.kt`, `TargetAppsSettingsScreen.kt`, `CadenceSettingsScreen.kt`, `PermissionsDashboardScreen.kt`)
-- [ ] `ui/main/MainActivity.kt`
+- [x] `ui/onboarding/OnboardingFlowScreen.kt` & steps (`WelcomeStep`, `NamePersonalizationStep`, `TargetAppPickerStep`, `PermissionsWizardStep`, `CadenceSetupStep`)
+- [x] `ui/main/screens/` (`UserProfileSettingsScreen.kt`, `TargetAppsSettingsScreen.kt`, `CadenceSettingsScreen.kt`, `PermissionsDashboardScreen.kt`)
+- [x] `ui/main/MainActivity.kt` & `MainViewModel.kt`
+- [x] Build Output: `app/build/outputs/apk/debug/app-debug.apk`
+
 
 
 
