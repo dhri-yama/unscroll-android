@@ -1,0 +1,26 @@
+# Android / Gradle gitignore
+*.iml
+.gradle
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.idea
+.idea/workspace.xml
+.idea/libraries
+.idea/caches
+*.ap_
+*.apk
+*.aab
+*.dex
+*.class
+/crashlytics-build.properties
+
+# OS & Environments
+.DS_Store
+Thumbs.db
+
+# User scratch files
+scratch/
