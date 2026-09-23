@@ -1,8 +1,8 @@
 # Unscroll — Working Memory & Development Log
 
 ## Current Objective & Phase
-- **Phase:** System Services Implementation (Tranche 3)
-- **Status:** Tranche 2 (DataStore Settings, Sequential Insults Persistence, Memory Session Stats, AppContainer DI, UnscrollApplication) complete and committed to git.
+- **Phase:** Ambient UI & Compose Overlay Implementation (Tranche 4)
+- **Status:** Tranche 3 (AndroidManifest permissions & declaration, accessibility_service_config XML, ScrollTrackerAccessibilityService, SessionMonitorForegroundService, WindowManagerOverlayController) complete and committed to git.
 
 ## Architecture & Context State
 - **Pattern:** Clean Architecture (Domain, Data, Service, UI, DI via `AppContainer`).
@@ -21,9 +21,14 @@
 - [x] `data/repository/LocalInsultRepositoryImpl.kt` (round-robin sequential index persistence)
 - [x] `data/repository/MemorySessionStatsRepositoryImpl.kt` (thread-safe in-memory StateFlow)
 - [x] `di/AppContainer.kt` & `UnscrollApplication.kt`
-- [ ] `service/accessibility/ScrollTrackerAccessibilityService.kt`
-- [ ] `service/monitor/SessionMonitorForegroundService.kt`
-- [ ] `service/overlay/WindowManagerOverlayController.kt`
+- [x] `AndroidManifest.xml` & `accessibility_service_config.xml`
+- [x] `service/accessibility/ScrollTrackerAccessibilityService.kt`
+- [x] `service/monitor/SessionMonitorForegroundService.kt`
+- [x] `service/overlay/WindowManagerOverlayController.kt`
+- [ ] `ui/theme/` (`Color.kt`, `Theme.kt`, `Type.kt`)
+- [ ] `ui/components/` (`AmbientBackground.kt`, `GlassmorphicPillButton.kt`, `StatCounter.kt`)
+- [ ] `ui/overlay/AmbientOverlayScreen.kt` & `AmbientOverlayViewModel.kt`
+
 
 
 - [ ] `service/accessibility/ScrollTrackerAccessibilityService.kt`
