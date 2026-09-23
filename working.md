@@ -1,8 +1,8 @@
 # Unscroll — Working Memory & Development Log
 
 ## Current Objective & Phase
-- **Phase:** Data & Repository Layer Implementation (Tranche 2)
-- **Status:** Tranche 1 (Toolchain, Gradle Scaffold, Domain Models & Contracts, Use Cases, 50 Curated Insults Data Source) complete and committed to git.
+- **Phase:** System Services Implementation (Tranche 3)
+- **Status:** Tranche 2 (DataStore Settings, Sequential Insults Persistence, Memory Session Stats, AppContainer DI, UnscrollApplication) complete and committed to git.
 
 ## Architecture & Context State
 - **Pattern:** Clean Architecture (Domain, Data, Service, UI, DI via `AppContainer`).
@@ -17,10 +17,14 @@
 - [x] `domain/repository` contracts (`InsultRepository.kt`, `SessionStatsRepository.kt`, `SettingsRepository.kt`)
 - [x] `domain/usecase` (`GetNextInsultUseCase.kt`, `CalculateReelHeuristicsUseCase.kt`, `TrackScrollEventUseCase.kt`, `EvaluateOverlayTriggerUseCase.kt`)
 - [x] `data/source/CuratedInsultsDataSource.kt` (50 curated insults with `{name}` placeholders)
-- [ ] `di/AppContainer.kt`
-- [ ] `data/repository/LocalInsultRepositoryImpl.kt`
-- [ ] `data/repository/MemorySessionStatsRepositoryImpl.kt`
-- [ ] `data/repository/DataStoreSettingsRepositoryImpl.kt` (stores user name, target apps, interval)
+- [x] `data/repository/DataStoreSettingsRepositoryImpl.kt` (stores user name, target apps, interval, onboarding)
+- [x] `data/repository/LocalInsultRepositoryImpl.kt` (round-robin sequential index persistence)
+- [x] `data/repository/MemorySessionStatsRepositoryImpl.kt` (thread-safe in-memory StateFlow)
+- [x] `di/AppContainer.kt` & `UnscrollApplication.kt`
+- [ ] `service/accessibility/ScrollTrackerAccessibilityService.kt`
+- [ ] `service/monitor/SessionMonitorForegroundService.kt`
+- [ ] `service/overlay/WindowManagerOverlayController.kt`
+
 
 - [ ] `service/accessibility/ScrollTrackerAccessibilityService.kt`
 - [ ] `service/monitor/SessionMonitorForegroundService.kt`
