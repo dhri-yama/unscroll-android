@@ -24,3 +24,6 @@ Thumbs.db
 
 # User scratch files
 scratch/
+
+# Local agent tooling (not part of the app)
+.agents/
