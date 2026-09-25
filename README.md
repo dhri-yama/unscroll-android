@@ -104,10 +104,6 @@ guards. `lintDebug` and `assembleDebug` are also clean.
 
 - **Not Play Store distributable.** Overlay-based interruption patterns conflict
   with Play policy, hence sideloading.
-- **Untested on physical devices.** Verified on an Android emulator only. Real
-  keyguard/OEM lock behavior (`ACTION_USER_PRESENT` delivery) hasn't been
-  confirmed on hardware, and background process-death recovery (`START_STICKY`)
-  is unverified.
 - **Scroll distance is an estimate** from accessibility gesture deltas, not a
   ground-truth pixel measurement.
 - **Requires the app process to be alive or the service sticky-restarted** for
