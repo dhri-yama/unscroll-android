@@ -22,6 +22,10 @@ locally on your device.
   insult from a local set of 50, your session stats, and a countdown timer.
 - **Tracks one session**, combining all your tracked apps into a single streak.
   Locking your phone ends the session; unlocking starts a fresh one from zero.
+- **Records how you respond.** Each overlay has two buttons, and both dismiss it.
+  Tapping the background does nothing, and locking your device dismisses it too.
+  Daily tallies for each button are kept for a year and charted on the Profile
+  screen over 7, 30, or 90 days.
 
 ## Screens
 
@@ -31,6 +35,7 @@ locally on your device.
 | **Live dashboard** | Session timer, reels/gestures/distance metrics, event stream |
 | **Targets** | Choose which installed apps to track |
 | **Cadence** | Change the interruption interval |
+| **Profile** | Your name, plus per-day charts of which response button you reach for |
 | **System** | Permission status, refresh, restart monitoring |
 | **Overlay** | The blocking interruption screen (drawn over other apps) |
 
@@ -91,9 +96,9 @@ unlocking starts a new one at `0:00` with counters reset.
 ./gradlew testDebugUnitTest
 ```
 
-45 unit tests cover session reconciliation, the glitch engine's random timing and
-color accents, and the repository guards. `lintDebug` and `assembleDebug` are
-also clean.
+70 unit tests cover session reconciliation, the glitch engine's random timing and
+color accents, daily response statistics, chart geometry, and the repository
+guards. `lintDebug` and `assembleDebug` are also clean.
 
 ## Known limitations
 

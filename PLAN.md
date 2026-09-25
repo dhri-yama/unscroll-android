@@ -14,12 +14,13 @@ blocking overlay** covers the screen showing:
 - Prominent countdown timer / duration display
 - Glassmorphic action buttons (`>> Skip` and `🔒 Lock Screen`)
 
-Tap anywhere or tap `Skip` to dismiss the overlay.
+Either response button dismisses the overlay, as does locking the device. Tapping
+outside the controls does nothing.
 
 ## Confirmed decisions
 
 - **Target apps:** user picks from installed apps (settings screen)
-- **Overlay behavior:** full blocking screen styled after modern ambient design (dark blurred backdrop with warm glow), tap anywhere or `Skip` button to dismiss
+- **Overlay behavior:** full blocking screen styled after modern ambient design (dark blurred backdrop with warm glow); only the two response buttons dismiss it, or locking the device. Tapping outside the controls does nothing.
 - **Insult system:** 50 curated insults stored locally in code, chosen sequentially (0..49 round-robin, persisted index in DataStore) — no remote API calls
 - **Distribution:** sideload APK only (Play Store policy blocks this pattern)
 - **Tech stack:** Kotlin + Jetpack Compose (required for system APIs & custom overlay layout)
