@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import com.unscroll.app.R
 import com.unscroll.app.UnscrollApplication
 import com.unscroll.app.di.AppContainer
+import com.unscroll.app.domain.repository.DailyStatsRepository
 import com.unscroll.app.domain.repository.SessionStatsRepository
 import com.unscroll.app.domain.usecase.EvaluateOverlayTriggerUseCase
 import com.unscroll.app.domain.usecase.GetNextInsultUseCase
@@ -38,6 +39,7 @@ class SessionMonitorForegroundService : Service() {
     private lateinit var overlayController: WindowManagerOverlayController
     private lateinit var getNextInsultUseCase: GetNextInsultUseCase
     private lateinit var evaluateOverlayTriggerUseCase: EvaluateOverlayTriggerUseCase
+    private lateinit var dailyStatsRepository: DailyStatsRepository
     private var screenStateReceiver: BroadcastReceiver? = null
 
     companion object {
@@ -74,6 +76,7 @@ class SessionMonitorForegroundService : Service() {
         sessionStatsRepository = appContainer.sessionStatsRepository
         getNextInsultUseCase = appContainer.getNextInsultUseCase
         evaluateOverlayTriggerUseCase = appContainer.evaluateOverlayTriggerUseCase
+        dailyStatsRepository = appContainer.dailyStatsRepository
         overlayController = WindowManagerOverlayController(this)
 
         createNotificationChannel()
@@ -174,7 +177,11 @@ class SessionMonitorForegroundService : Service() {
                                         overlayController.showOverlay(
                                             stats = updatedStats,
                                             insult = insult,
-                                            onDismiss = {}
+                                            onDismiss = { response ->
+                                                serviceScope.launch {
+                                                    dailyStatsRepository.recordResponse(response)
+                                                }
+                                            }
                                         )
                                     }
                                 }

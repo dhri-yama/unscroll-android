@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Dashboard
@@ -64,8 +63,7 @@ import com.unscroll.app.ui.theme.CyberPanel
 import com.unscroll.app.ui.theme.CyberSoft
 import com.unscroll.app.ui.theme.CyberSurface
 import com.unscroll.app.ui.theme.CyberWhite
-
-private val TerminalShape = RoundedCornerShape(0.dp)
+import com.unscroll.app.ui.theme.TerminalShape
 
 @Composable
 fun CyberPanel(

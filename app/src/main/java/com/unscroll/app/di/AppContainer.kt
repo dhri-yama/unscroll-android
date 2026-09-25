@@ -1,9 +1,11 @@
 package com.unscroll.app.di
 
 import android.content.Context
+import com.unscroll.app.data.repository.DataStoreDailyStatsRepository
 import com.unscroll.app.data.repository.DataStoreSettingsRepositoryImpl
 import com.unscroll.app.data.repository.LocalInsultRepositoryImpl
 import com.unscroll.app.data.repository.MemorySessionStatsRepositoryImpl
+import com.unscroll.app.domain.repository.DailyStatsRepository
 import com.unscroll.app.domain.repository.InsultRepository
 import com.unscroll.app.domain.repository.SessionStatsRepository
 import com.unscroll.app.domain.repository.SettingsRepository
@@ -24,6 +26,10 @@ class AppContainer(private val context: Context) {
 
     val sessionStatsRepository: SessionStatsRepository by lazy {
         MemorySessionStatsRepositoryImpl()
+    }
+
+    val dailyStatsRepository: DailyStatsRepository by lazy {
+        DataStoreDailyStatsRepository(context.applicationContext)
     }
 
     val calculateReelHeuristicsUseCase: CalculateReelHeuristicsUseCase by lazy {

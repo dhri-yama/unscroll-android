@@ -1,6 +1,5 @@
 package com.unscroll.app.ui.overlay
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unscroll.app.domain.model.Insult
+import com.unscroll.app.domain.model.OverlayResponse
 import com.unscroll.app.domain.model.SessionStats
 import com.unscroll.app.ui.components.AmbientBackground
 import com.unscroll.app.ui.components.CyberButtonStyle
@@ -54,8 +54,7 @@ import java.util.Locale
 fun AmbientOverlayScreen(
     stats: SessionStats,
     insult: Insult,
-    onSkipClick: () -> Unit,
-    onLockScreenClick: () -> Unit,
+    onResponseClick: (OverlayResponse) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var countdownSeconds by remember { mutableIntStateOf(30) }
@@ -85,9 +84,7 @@ fun AmbientOverlayScreen(
     }
     val activeMinutes = stats.totalTimeSpentMillis / (1000 * 60)
 
-    AmbientBackground(
-        modifier = modifier.clickable { onSkipClick() }
-    ) {
+    AmbientBackground(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -201,14 +198,14 @@ fun AmbientOverlayScreen(
             ) {
                 GlassmorphicPillButton(
                     text = "I'm a PUSSY",
-                    onClick = onSkipClick,
+                    onClick = { onResponseClick(OverlayResponse.SKIP) },
                     modifier = Modifier.weight(1f),
                     iconPrefix = ">>",
                     style = CyberButtonStyle.Filled
                 )
                 GlassmorphicPillButton(
                     text = "I'm an ASS",
-                    onClick = onLockScreenClick,
+                    onClick = { onResponseClick(OverlayResponse.LOCK) },
                     modifier = Modifier.weight(1f),
                     iconPrefix = "[L]",
                     style = CyberButtonStyle.Outlined
@@ -216,7 +213,7 @@ fun AmbientOverlayScreen(
             }
             Spacer(modifier = Modifier.padding(top = 14.dp))
             Text(
-                text = "LOCAL TIME // $currentTimeString    //    TAP OUTSIDE CONTROLS TO ABORT",
+                text = "LOCAL TIME // $currentTimeString    //    USE A CONTROL TO DISMISS",
                 style = MaterialTheme.typography.labelSmall,
                 color = CyberMuted,
                 textAlign = TextAlign.Center,

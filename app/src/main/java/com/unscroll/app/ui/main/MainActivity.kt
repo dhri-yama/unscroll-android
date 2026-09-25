@@ -80,7 +80,11 @@ class MainActivity : ComponentActivity() {
         val container = (application as UnscrollApplication).container
 
         val mainViewModel: MainViewModel by viewModels {
-            MainViewModel.Factory(container.settingsRepository, container.sessionStatsRepository)
+            MainViewModel.Factory(
+                container.settingsRepository,
+                container.sessionStatsRepository,
+                container.dailyStatsRepository
+            )
         }
         val onboardingViewModel: OnboardingViewModel by viewModels {
             OnboardingViewModel.Factory(container.settingsRepository)
@@ -134,6 +138,8 @@ fun MainDashboardScreen(
     val userProfile by viewModel.userProfile.collectAsState()
     val trackedPackages by viewModel.trackedPackages.collectAsState()
     val sessionStats by viewModel.sessionStats.collectAsState()
+    val dailyStats by viewModel.dailyStats.collectAsState()
+    val selectedRangeDays by viewModel.selectedRangeDays.collectAsState()
     val destinations = remember {
         listOf(
             CyberNavDestination("Live", Icons.Outlined.Dashboard),
@@ -190,7 +196,10 @@ fun MainDashboardScreen(
                         )
                         3 -> UserProfileSettingsScreen(
                             userName = userProfile.userName,
-                            onSaveName = viewModel::updateUserName
+                            onSaveName = viewModel::updateUserName,
+                            dailyStats = dailyStats,
+                            selectedRangeDays = selectedRangeDays,
+                            onSelectRange = viewModel::selectRange
                         )
                         else -> PermissionsDashboardScreen(
                             isUsageGranted = isUsageGranted,
