@@ -81,14 +81,11 @@ fun CyberPanel(
             .border(1.dp, CyberLine, TerminalShape)
             .glitchEdgeFlicker(
                 frame = frame,
-                activeColor = CyberWhite,
                 idleColor = CyberWhite,
                 tintColor = CyberWhite
             )
             .glitchShimmer(
                 frame = frame,
-                activeColor = CyberWhite,
-                idleColor = CyberWhite,
                 maxShiftDp = 1.6f,
                 verticalShiftDp = 0.8f
             )
@@ -113,10 +110,8 @@ fun CyberSectionLabel(
         text = displayed,
         modifier = modifier
             .clearAndSetSemantics { contentDescription = source }
-            .glitchFlicker(
+            .glitchShimmer(
                 frame = frame,
-                activeColor = CyberWhite,
-                idleColor = CyberWhite,
                 minAlpha = 0.25f
             ),
         style = MaterialTheme.typography.labelMedium,
@@ -188,10 +183,8 @@ fun CyberProgressRail(
                         maxShiftDp = 1.6f,
                         verticalShiftDp = 0f
                     )
-                    .glitchFlicker(
+                    .glitchShimmer(
                         frame = segmentFrame,
-                        activeColor = CyberWhite,
-                        idleColor = CyberWhite,
                         minAlpha = 0.45f
                     )
             )
@@ -223,10 +216,8 @@ fun CyberTopBar(
             modifier = Modifier
                 .clearAndSetSemantics { contentDescription = label }
                 .glitchJitter(frame = frame, maxShiftDp = 2f, verticalShiftDp = 0.6f)
-                .glitchFlicker(
+                .glitchShimmer(
                     frame = frame,
-                    activeColor = CyberWhite,
-                    idleColor = CyberWhite,
                     minAlpha = 0.3f
                 ),
             style = MaterialTheme.typography.labelLarge,
@@ -271,8 +262,6 @@ fun CyberBottomNav(
                     .background(if (selected) CyberWhite else Color.Transparent)
                     .glitchShimmer(
                         frame = itemFrame,
-                        activeColor = CyberWhite,
-                        idleColor = CyberWhite,
                         minAlpha = 0.5f
                     )
                     .clickable { onSelect(index) }
@@ -320,8 +309,6 @@ fun CyberCheckBox(
             )
             .glitchShimmer(
                 frame = frame,
-                activeColor = CyberWhite,
-                idleColor = CyberWhite,
                 minAlpha = 0.2f,
                 maxShiftDp = 1.8f,
                 verticalShiftDp = 0.6f
@@ -335,10 +322,8 @@ fun CyberCheckBox(
                 tint = CyberBlack,
                 modifier = Modifier
                     .size(16.dp)
-                    .glitchFlicker(
+                    .glitchShimmer(
                         frame = frame,
-                        activeColor = CyberBlack,
-                        idleColor = CyberBlack,
                         minAlpha = 0.2f
                     )
             )
@@ -403,22 +388,39 @@ fun GlitchText(
         0f
     }
     val sliceTear = frame.isActive && frame.intensity > 0.45f
+    val lead = frame.accentFor(swap = false)
+    val counter = frame.counterAccentFor(swap = false)
+    val splitAlpha = if (frame.isActive) (0.35f + 0.45f * frame.intensity).coerceAtMost(0.85f) else 0f
 
     Box(
         modifier = modifier
             .glitchJitter(frame = frame, maxShiftDp = 1.2f, verticalShiftDp = 0.4f)
     ) {
-        Text(
-            text = displayed,
-            style = style,
-            color = color.copy(alpha = 0.30f),
-            modifier = Modifier
-                .clearAndSetSemantics { }
-                .graphicsLayer {
-                    translationX = shiftPx - 2.5f
-                    translationY = 0.8f
-                }
-        )
+        if (frame.isActive) {
+            Text(
+                text = displayed,
+                style = style,
+                color = lead.copy(alpha = splitAlpha),
+                modifier = Modifier
+                    .clearAndSetSemantics { }
+                    .graphicsLayer {
+                        translationX = shiftPx - 2.5f
+                        translationY = 0.8f
+                    }
+            )
+        } else {
+            Text(
+                text = displayed,
+                style = style,
+                color = color.copy(alpha = 0.30f),
+                modifier = Modifier
+                    .clearAndSetSemantics { }
+                    .graphicsLayer {
+                        translationX = shiftPx - 2.5f
+                        translationY = 0.8f
+                    }
+            )
+        }
         Text(
             text = displayed,
             style = style,
@@ -433,7 +435,7 @@ fun GlitchText(
             Text(
                 text = displayed,
                 style = style,
-                color = CyberSoft.copy(alpha = 0.45f + 0.4f * frame.intensity),
+                color = counter.copy(alpha = splitAlpha),
                 modifier = Modifier
                     .clearAndSetSemantics { }
                     .graphicsLayer {
@@ -487,8 +489,6 @@ fun CyberMetric(
             .padding(vertical = 4.dp)
             .glitchShimmer(
                 frame = frame,
-                activeColor = if (emphasis) CyberWhite else CyberSoft,
-                idleColor = if (emphasis) CyberWhite else CyberSoft,
                 minAlpha = 0.3f,
                 maxShiftDp = 2.4f,
                 verticalShiftDp = 0.6f

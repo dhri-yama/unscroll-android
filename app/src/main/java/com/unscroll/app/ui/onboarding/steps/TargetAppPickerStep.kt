@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.unscroll.app.ui.components.CyberCheckBox
 import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.components.CyberStatusChip
-import com.unscroll.app.ui.components.glitchFlicker
 import com.unscroll.app.ui.components.glitchFrame
 import com.unscroll.app.ui.components.glitchShimmer
 import com.unscroll.app.ui.components.glitchSlices
@@ -107,8 +106,6 @@ fun TargetAppPickerStep(
                         .border(1.dp, if (isSelected) CyberWhite else CyberLine, RoundedCornerShape(0.dp))
                         .glitchShimmer(
                             frame = frame,
-                            activeColor = CyberWhite,
-                            idleColor = CyberWhite,
                             minAlpha = 0.45f,
                             maxShiftDp = if (isSelected) 2.6f else 1f,
                             verticalShiftDp = 0.6f
@@ -124,8 +121,6 @@ fun TargetAppPickerStep(
                             .weight(1f)
                             .glitchShimmer(
                                 frame = frame,
-                                activeColor = CyberWhite,
-                                idleColor = CyberWhite,
                                 minAlpha = 0.45f,
                                 maxShiftDp = 1.4f,
                                 verticalShiftDp = 0.4f

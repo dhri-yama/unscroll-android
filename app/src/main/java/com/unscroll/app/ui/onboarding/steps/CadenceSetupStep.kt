@@ -95,8 +95,6 @@ fun CadenceSetupStep(
                             .border(1.dp, if (isSelected) CyberWhite else CyberLine, RoundedCornerShape(0.dp))
                             .glitchShimmer(
                                 frame = frame,
-                                activeColor = if (isSelected) CyberWhite else CyberSoft,
-                                idleColor = if (isSelected) CyberWhite else CyberSoft,
                                 minAlpha = 0.4f,
                                 maxShiftDp = if (isSelected) 2.8f else 1.2f,
                                 verticalShiftDp = 0.6f

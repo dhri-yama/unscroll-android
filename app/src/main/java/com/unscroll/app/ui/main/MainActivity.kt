@@ -360,8 +360,6 @@ private fun TelemetryRow(
             .padding(vertical = 6.dp)
             .glitchShimmer(
                 frame = frame,
-                activeColor = CyberWhite,
-                idleColor = CyberWhite,
                 minAlpha = 0.4f,
                 maxShiftDp = 1.8f,
                 verticalShiftDp = 0.4f

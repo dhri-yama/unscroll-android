@@ -1,17 +1,15 @@
 package com.unscroll.app.ui.components
 
 import android.animation.ValueAnimator
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
@@ -23,34 +21,48 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlin.math.floor
+import com.unscroll.app.ui.theme.CyberCyan
+import com.unscroll.app.ui.theme.CyberMagenta
+import kotlinx.coroutines.delay
+import kotlin.random.Random
 
-internal const val GLITCH_CYCLE_MILLIS = 2_600
-internal const val GLITCH_STEPS_PER_CYCLE = 52
+internal const val GLITCH_STEP_MILLIS = 40
+internal const val GLITCH_MIN_GAP_MILLIS = 6_000L
+internal const val GLITCH_MAX_GAP_MILLIS = 12_000L
+internal const val GLITCH_FIRST_GAP_MAX_MILLIS = 3_000L
+internal const val GLITCH_MIN_EVENT_STEPS = 3
+internal const val GLITCH_MAX_EVENT_STEPS = 8
+internal const val GLITCH_STUTTER_CHANCE = 0.10f
+internal const val GLITCH_STUTTER_MAX_MILLIS = 900L
 
-internal enum class GlitchBand {
-    Calm,
-    Primary,
-    PrimaryDecay,
-    Secondary,
-    SecondaryDecay
-}
-
-internal data class GlitchFrame(
+internal data class GlitchEvent(
+    val eventId: Int,
     val step: Int,
-    val band: GlitchBand,
+    val steps: Int,
     val intensity: Float,
-    val seed: Int
+    val seed: Int,
+    val leadIsCyan: Boolean
 ) {
-    val isCalm: Boolean get() = band == GlitchBand.Calm
     val isActive: Boolean get() = intensity > 0.02f
 
+    fun accentFor(swap: Boolean): Color {
+        val cyanLeads = leadIsCyan != swap
+        return if (cyanLeads) CyberCyan else CyberMagenta
+    }
+
+    fun counterAccentFor(swap: Boolean): Color {
+        val cyanLeads = leadIsCyan != swap
+        return if (cyanLeads) CyberMagenta else CyberCyan
+    }
+
     companion object {
-        val Idle = GlitchFrame(
+        val Idle = GlitchEvent(
+            eventId = 0,
             step = 0,
-            band = GlitchBand.Calm,
+            steps = 0,
             intensity = 0f,
-            seed = 0
+            seed = 0,
+            leadIsCyan = true
         )
     }
 }
@@ -72,77 +84,127 @@ internal object GlitchNoise {
     }
 }
 
-internal val LocalGlitchFrame = compositionLocalOf { GlitchFrame.Idle }
+internal fun envelopeFor(step: Int, steps: Int): Float {
+    if (steps <= 0 || step < 0 || step >= steps) return 0f
+    val progress = step / steps.toFloat()
+    return when {
+        progress < 0.25f -> 1f
+        progress < 0.55f -> 1f - (progress - 0.25f) * 0.9f
+        else -> {
+            val decay = (progress - 0.55f) / 0.45f
+            0.775f * (1f - decay) * (1f - decay)
+        }
+    }
+}
 
-internal fun glitchFrameFor(phase: Float, seed: Int, enabled: Boolean): GlitchFrame {
-    if (!enabled) return GlitchFrame.Idle
-    val wrapped = phase - floor(phase)
-    val step = (wrapped * GLITCH_STEPS_PER_CYCLE).toInt()
-    val band = when (wrapped) {
-        in 0f..0.56f -> GlitchBand.Calm
-        in 0.56f..0.71f -> GlitchBand.Primary
-        in 0.71f..0.81f -> GlitchBand.PrimaryDecay
-        in 0.81f..0.90f -> GlitchBand.Secondary
-        else -> GlitchBand.SecondaryDecay
+internal fun nextGapMillis(random: Random, first: Boolean): Long {
+    if (first) {
+        return 1_500L + random.nextLong(0L, GLITCH_FIRST_GAP_MAX_MILLIS - 1_500L)
     }
-    val base = when (band) {
-        GlitchBand.Calm -> 0f
-        GlitchBand.Primary -> 1f
-        GlitchBand.PrimaryDecay -> 0.45f
-        GlitchBand.Secondary -> 0.8f
-        GlitchBand.SecondaryDecay -> 0.28f
-    }
-    val flicker = if (band == GlitchBand.Calm) {
-        0f
-    } else {
-        0.3f + 0.7f * GlitchNoise.sample(seed, step, salt = 7)
-    }
-    return GlitchFrame(
+    return GLITCH_MIN_GAP_MILLIS +
+        random.nextLong(0L, GLITCH_MAX_GAP_MILLIS - GLITCH_MIN_GAP_MILLIS)
+}
+
+internal fun nextEventSteps(random: Random): Int =
+    GLITCH_MIN_EVENT_STEPS + random.nextInt(GLITCH_MAX_EVENT_STEPS - GLITCH_MIN_EVENT_STEPS + 1)
+
+internal fun frameForEvent(
+    eventId: Int,
+    step: Int,
+    steps: Int,
+    random: Random,
+    enabled: Boolean
+): GlitchEvent {
+    if (!enabled || steps <= 0) return GlitchEvent.Idle
+    val base = envelopeFor(step, steps)
+    if (base <= 0f) return GlitchEvent.Idle
+    val noise = GlitchNoise.sample(eventId * 7919, step, salt = 7)
+    val flicker = if (step == 0) 0.78f + 0.22f * noise else 0.3f + 0.7f * noise
+    return GlitchEvent(
+        eventId = eventId,
         step = step,
-        band = band,
+        steps = steps,
         intensity = (base * flicker).coerceIn(0f, 1f),
-        seed = seed * 131 + band.ordinal
+        seed = eventId * 131 + 17,
+        leadIsCyan = random.nextFloat() < 0.5f
     )
 }
+
+internal val LocalGlitchFrame = compositionLocalOf { GlitchEvent.Idle }
 
 @Composable
 internal fun GlitchEngine(content: @Composable () -> Unit) {
     if (!ValueAnimator.areAnimatorsEnabled()) {
-        CompositionLocalProvider(LocalGlitchFrame provides GlitchFrame.Idle) {
+        CompositionLocalProvider(LocalGlitchFrame provides GlitchEvent.Idle) {
             content()
         }
         return
     }
-    val transition = rememberInfiniteTransition(label = "glitch-engine")
-    val phase by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(GLITCH_CYCLE_MILLIS, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "glitch-phase"
-    )
-    val frame = remember(phase) { glitchFrameFor(phase, seed = 0x5EED, enabled = true) }
+    val baseSeed = remember { Random.Default.nextInt() }
+    var eventId by remember { mutableIntStateOf(0) }
+    var frame by remember { mutableStateOf(GlitchEvent.Idle) }
+
+    LaunchedEffect(baseSeed) {
+        val random = Random(baseSeed)
+        var currentId = 0
+        var first = true
+        while (true) {
+            var gap = nextGapMillis(random, first)
+            first = false
+            while (gap > 0L) {
+                val slice = minOf(gap, 250L)
+                delay(slice)
+                gap -= slice
+            }
+            currentId += 1
+            eventId = currentId
+            val steps = nextEventSteps(random)
+            val eventRandom = Random(baseSeed + currentId)
+            for (step in 0 until steps) {
+                frame = frameForEvent(currentId, step, steps, eventRandom, enabled = true)
+                delay(GLITCH_STEP_MILLIS.toLong())
+            }
+            frame = GlitchEvent.Idle
+            if (random.nextFloat() < GLITCH_STUTTER_CHANCE) {
+                delay(400L + random.nextLong(0L, GLITCH_STUTTER_MAX_MILLIS - 400L))
+            }
+        }
+    }
+
     CompositionLocalProvider(LocalGlitchFrame provides frame) {
         content()
     }
 }
 
+internal fun localFrameFor(global: GlitchEvent, seed: Int, gain: Float = 1f): GlitchEvent {
+    if (!global.isActive) return global
+    val delaySteps = (GlitchNoise.sample(seed, global.eventId, salt = 91) * global.steps * 0.45f).toInt()
+    val localStep = global.step - delaySteps
+    if (localStep < 0) return GlitchEvent.Idle
+    val localSteps = (global.steps * (0.55f + 0.75f * GlitchNoise.sample(seed, global.eventId, salt = 92)))
+        .toInt()
+        .coerceAtLeast(1)
+    val local = envelopeFor(localStep, localSteps)
+    if (local <= 0f) return GlitchEvent.Idle
+    val texture = 0.3f + 0.7f * GlitchNoise.sample(global.seed xor seed, global.step, salt = 21)
+    val intensity = (local * texture * gain).coerceIn(0f, 1f)
+    if (intensity <= 0.02f) return GlitchEvent.Idle
+    return global.copy(
+        step = localStep,
+        steps = localSteps,
+        intensity = intensity,
+        seed = global.seed * 31 + seed,
+        leadIsCyan = global.leadIsCyan xor (GlitchNoise.sample(seed, global.eventId, salt = 93) < 0.5f)
+    )
+}
+
 @Composable
-internal fun glitchFrame(seed: Int, gain: Float = 1f): GlitchFrame {
-    val global = LocalGlitchFrame.current
-    if (global.isCalm) return global
-    val intensity = (global.intensity * gain).coerceIn(0f, 1f)
-    return if (intensity <= 0.02f) {
-        global.copy(intensity = 0f)
-    } else {
-        global.copy(intensity = intensity, seed = global.seed * 31 + seed)
-    }
+internal fun glitchFrame(seed: Int, gain: Float = 1f): GlitchEvent {
+    return localFrameFor(LocalGlitchFrame.current, seed, gain)
 }
 
 internal fun Modifier.glitchJitter(
-    frame: GlitchFrame,
+    frame: GlitchEvent,
     maxShiftDp: Float = 3f,
     verticalShiftDp: Float = 1.2f
 ): Modifier {
@@ -157,9 +219,7 @@ internal fun Modifier.glitchJitter(
 
 @Composable
 internal fun Modifier.glitchShimmer(
-    frame: GlitchFrame,
-    activeColor: Color,
-    idleColor: Color,
+    frame: GlitchEvent,
     minAlpha: Float = 0.15f,
     maxShiftDp: Float = 0f,
     verticalShiftDp: Float = 0f
@@ -192,10 +252,12 @@ internal fun Modifier.glitchShimmer(
 
 @Composable
 internal fun Modifier.glitchSlices(
-    frame: GlitchFrame,
+    frame: GlitchEvent,
     strength: Float = 1f
 ): Modifier {
     if (!frame.isActive || frame.intensity < 0.35f) return this
+    val accent = frame.accentFor(swap = false)
+    val counter = frame.counterAccentFor(swap = false)
     val density = LocalDensity.current
     val maxShiftPx = with(density) { (6f * strength).dp.toPx() }
     val bandHeightPx = with(density) { 8f.dp.toPx() }
@@ -216,37 +278,26 @@ internal fun Modifier.glitchSlices(
                     this@drawWithContent.drawContent()
                 }
             }
+            val tint = if (index % 2 == 0) accent else counter
+            drawRect(
+                color = tint.copy(alpha = 0.16f * frame.intensity),
+                topLeft = Offset(0f, top),
+                size = Size(size.width, bottom - top)
+            )
         }
     }
 }
 
 @Composable
-internal fun Modifier.glitchFlicker(
-    frame: GlitchFrame,
-    activeColor: Color,
-    idleColor: Color,
-    minAlpha: Float = 0.15f
-): Modifier {
-    val flicker = if (!frame.isActive) {
-        1f
-    } else {
-        (0.15f + 0.85f * GlitchNoise.sample(frame.seed, frame.step, salt = 21))
-            .coerceAtLeast(minAlpha)
-    }
-    return graphicsLayer { alpha = flicker }
-}
-
-@Composable
 internal fun Modifier.glitchEdgeFlicker(
-    frame: GlitchFrame,
-    activeColor: Color,
+    frame: GlitchEvent,
     idleColor: Color,
     tintColor: Color
 ): Modifier {
-    val color = when {
-        !frame.isActive -> idleColor
-        frame.intensity > 0.55f -> activeColor
-        else -> idleColor.copy(alpha = 0.6f)
+    val color = if (!frame.isActive) {
+        idleColor
+    } else {
+        frame.accentFor(swap = false)
     }
     val alpha = if (frame.isActive) {
         0.4f + 0.6f * GlitchNoise.sample(frame.seed, frame.step, salt = 23)
@@ -273,7 +324,7 @@ internal fun Modifier.glitchEdgeFlicker(
 
 internal fun glitchedText(
     source: String,
-    frame: GlitchFrame,
+    frame: GlitchEvent,
     strength: Float = 0.35f
 ): String {
     if (!frame.isActive || source.isEmpty()) return source

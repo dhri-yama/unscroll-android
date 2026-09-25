@@ -153,8 +153,6 @@ fun AmbientOverlayScreen(
                                     color = CyberWhite,
                                     modifier = Modifier.glitchShimmer(
                                         frame = glitchFrame(0x6E18, gain = 1.3f),
-                                        activeColor = CyberWhite,
-                                        idleColor = CyberWhite,
                                         minAlpha = 0.3f,
                                         maxShiftDp = 3.4f,
                                         verticalShiftDp = 0.8f

@@ -80,8 +80,6 @@ fun GlassmorphicPillButton(
             )
             .glitchShimmer(
                 frame = if (pressed) frame.copy(intensity = 1f) else frame,
-                activeColor = CyberWhite,
-                idleColor = CyberWhite,
                 minAlpha = 0.3f,
                 maxShiftDp = if (pressed) 3.5f else 2.4f,
                 verticalShiftDp = if (pressed) 1.4f else 0.8f

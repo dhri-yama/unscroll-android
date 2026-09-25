@@ -90,6 +90,8 @@ fun AmbientBackground(
 
             if (frame.isActive) {
                 val intensity = frame.intensity
+                val accent = frame.accentFor(swap = false)
+                val accentAlt = frame.counterAccentFor(swap = false)
                 val bandCount = (1 + (intensity * 4f).toInt()).coerceIn(1, 5)
                 repeat(bandCount) { index ->
                     val salt = 3 + index * 13
@@ -99,8 +101,9 @@ fun AmbientBackground(
                     val bottom = (top + bandHeight).coerceAtMost(size.height)
                     if (bottom - top < 1f) return@repeat
 
+                    val bandTint = if (index % 2 == 0) accent else accentAlt
                     drawRect(
-                        color = CyberWhite.copy(alpha = 0.035f + 0.06f * intensity),
+                        color = bandTint.copy(alpha = 0.03f + 0.07f * intensity),
                         topLeft = Offset(0f, top),
                         size = Size(size.width, bottom - top)
                     )
@@ -113,14 +116,14 @@ fun AmbientBackground(
                         val segmentX = (size.width * segmentPlacement - segmentWidth / 2f)
                             .coerceIn(0f, (size.width - segmentWidth).coerceAtLeast(0f))
                         drawRect(
-                            color = CyberWhite.copy(alpha = 0.05f + 0.09f * intensity),
+                            color = bandTint.copy(alpha = 0.05f + 0.11f * intensity),
                             topLeft = Offset(segmentX + shift, top),
                             size = Size(segmentWidth, (bottom - top).coerceAtLeast(1f))
                         )
                     }
 
                     drawLine(
-                        color = CyberWhite.copy(alpha = 0.25f + 0.4f * intensity),
+                        color = bandTint.copy(alpha = 0.3f + 0.5f * intensity),
                         start = Offset(0f, top),
                         end = Offset(size.width, top),
                         strokeWidth = 1f
@@ -136,7 +139,7 @@ fun AmbientBackground(
                         size = Size(size.width, 3.dp.toPx())
                     )
                     drawLine(
-                        color = CyberWhite.copy(alpha = 0.6f),
+                        color = accent.copy(alpha = 0.7f),
                         start = Offset(tearShift, tearY),
                         end = Offset(tearShift + size.width, tearY),
                         strokeWidth = 1f
