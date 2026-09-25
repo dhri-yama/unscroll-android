@@ -34,7 +34,7 @@ adb devices -l
 The phone should appear in the command output. Then install and launch the app:
 
 ```bash
-cd "/path/to/unscroll"
+cd /path/to/unscroll
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n com.unscroll.app/.ui.main.MainActivity
 ```
@@ -81,7 +81,7 @@ Confirm that `adb` can see the emulator:
 Install and launch the app:
 
 ```bash
-cd "/path/to/unscroll"
+cd /path/to/unscroll
 "$HOME/Library/Android/sdk/platform-tools/adb" install -r app/build/outputs/apk/debug/app-debug.apk
 "$HOME/Library/Android/sdk/platform-tools/adb" shell am start -n com.unscroll.app/.ui.main.MainActivity
 ```
@@ -109,7 +109,7 @@ java -version
 The required Gradle 8.9 distribution is already cached on this Mac. Build the debug APK with:
 
 ```bash
-cd "/path/to/unscroll"
+cd /path/to/unscroll
 "$HOME"/.gradle/wrapper/dists/gradle-8.9-bin/*/gradle-8.9/bin/gradle assembleDebug
 ```
 
@@ -124,7 +124,7 @@ Install the newly built APK:
 The project includes a Gradle 8.9 wrapper. After Java 17 is available, build with the wrapper:
 
 ```bash
-cd "/path/to/unscroll"
+cd /path/to/unscroll
 ./gradlew assembleDebug
 ```
 
