@@ -38,6 +38,9 @@ import com.unscroll.app.ui.components.CyberStatusChip
 import com.unscroll.app.ui.components.CyberTopBar
 import com.unscroll.app.ui.components.GlassmorphicPillButton
 import com.unscroll.app.ui.components.GlitchText
+import com.unscroll.app.ui.components.glitchShimmer
+import com.unscroll.app.ui.components.glitchFrame
+import com.unscroll.app.ui.components.glitchJitter
 import com.unscroll.app.ui.theme.CyberBlack
 import com.unscroll.app.ui.theme.CyberMuted
 import com.unscroll.app.ui.theme.CyberSoft
@@ -134,16 +137,31 @@ fun AmbientOverlayScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
-                                CyberSectionLabel(text = "LOCKOUT TIMER")
+                            Column(
+                                modifier = Modifier
+                                    .glitchJitter(
+                                        frame = glitchFrame(0x6E17, gain = 1.15f),
+                                        maxShiftDp = 2.6f,
+                                        verticalShiftDp = 0.8f
+                                    )
+                            ) {
+                                CyberSectionLabel(text = "LOCKOUT TIMER", glitchSeed = 0x6E17)
                                 Spacer(modifier = Modifier.padding(top = 8.dp))
                                 Text(
                                     text = timerText,
                                     style = MaterialTheme.typography.displayMedium.copy(letterSpacing = 2.sp),
-                                    color = CyberWhite
+                                    color = CyberWhite,
+                                    modifier = Modifier.glitchShimmer(
+                                        frame = glitchFrame(0x6E18, gain = 1.3f),
+                                        activeColor = CyberWhite,
+                                        idleColor = CyberWhite,
+                                        minAlpha = 0.3f,
+                                        maxShiftDp = 3.4f,
+                                        verticalShiftDp = 0.8f
+                                    )
                                 )
                             }
-                            CyberStatusChip(text = "HOLD", active = true)
+                            CyberStatusChip(text = "HOLD", active = true, glitchSeed = 0x6E19)
                         }
                     }
                     Spacer(modifier = Modifier.padding(top = 12.dp))
@@ -160,17 +178,20 @@ fun AmbientOverlayScreen(
                             CyberMetric(
                                 value = stats.estimatedReelsCount.toString().padStart(2, '0'),
                                 label = "Reels",
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                glitchSeed = 0x71A1
                             )
                             CyberMetric(
                                 value = distanceText,
                                 label = "Distance",
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                glitchSeed = 0x72B2
                             )
                             CyberMetric(
                                 value = "${activeMinutes}m",
                                 label = "Elapsed",
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                glitchSeed = 0x73C3
                             )
                         }
                     }

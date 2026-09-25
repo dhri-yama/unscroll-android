@@ -15,12 +15,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unscroll.app.ui.components.CyberPanel
 import com.unscroll.app.ui.components.CyberSectionLabel
+import com.unscroll.app.ui.components.glitchShimmer
+import com.unscroll.app.ui.components.glitchFrame
+import com.unscroll.app.ui.components.glitchJitter
+import com.unscroll.app.ui.components.glitchSlices
+import com.unscroll.app.ui.components.glitchedText
 import com.unscroll.app.ui.theme.CyberBlack
 import com.unscroll.app.ui.theme.CyberLine
 import com.unscroll.app.ui.theme.CyberMuted
@@ -74,21 +82,35 @@ fun CadenceSetupStep(
             ) {
                 INTERVAL_OPTIONS.forEach { interval ->
                     val isSelected = interval == selectedInterval
+                    val frame = glitchFrame(0x2A01 + interval * 17, gain = if (isSelected) 1.25f else 0.5f)
+                    val label = interval.toString()
+                    val displayed = remember(frame.step, frame.intensity, label, isSelected) {
+                        if (isSelected) glitchedText(label, frame, strength = 0.5f) else label
+                    }
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .height(82.dp)
                             .background(if (isSelected) CyberWhite else CyberBlack, RoundedCornerShape(0.dp))
                             .border(1.dp, if (isSelected) CyberWhite else CyberLine, RoundedCornerShape(0.dp))
+                            .glitchShimmer(
+                                frame = frame,
+                                activeColor = if (isSelected) CyberWhite else CyberSoft,
+                                idleColor = if (isSelected) CyberWhite else CyberSoft,
+                                minAlpha = 0.4f,
+                                maxShiftDp = if (isSelected) 2.8f else 1.2f,
+                                verticalShiftDp = 0.6f
+                            )
                             .clickable { onSelectInterval(interval) }
                             .padding(vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = interval.toString(),
+                            text = displayed,
                             style = MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp),
-                            color = if (isSelected) CyberBlack else CyberSoft
+                            color = if (isSelected) CyberBlack else CyberSoft,
+                            modifier = Modifier.clearAndSetSemantics { contentDescription = label }
                         )
                         Text(
                             text = "MIN",

@@ -3,6 +3,7 @@ package com.unscroll.app.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import com.unscroll.app.ui.components.GlitchEngine
 
 private val DarkColorScheme = darkColorScheme(
     primary = CyberWhite,
@@ -29,7 +30,8 @@ fun UnscrollTheme(
 ) {
     MaterialTheme(
         colorScheme = DarkColorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        GlitchEngine(content = content)
+    }
 }

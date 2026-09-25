@@ -12,6 +12,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.unscroll.app.R
@@ -40,6 +41,7 @@ class SessionMonitorForegroundService : Service() {
     private var screenStateReceiver: BroadcastReceiver? = null
 
     companion object {
+        private const val TAG = "SessionMonitor"
         private const val CHANNEL_ID = "unscroll_monitor_channel"
         private const val NOTIFICATION_ID = 1001
 
@@ -49,6 +51,14 @@ class SessionMonitorForegroundService : Service() {
                 context.startForegroundService(intent)
             } else {
                 context.startService(intent)
+            }
+        }
+
+        fun startSafely(context: Context) {
+            try {
+                start(context)
+            } catch (error: Exception) {
+                Log.w(TAG, "Unable to start monitoring service", error)
             }
         }
 
@@ -69,17 +79,23 @@ class SessionMonitorForegroundService : Service() {
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         registerScreenStateReceiver()
-        synchronizeSessionWithScreenState()
+        reconcileSessionWithScreenState()
         startMonitoringLoop()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        reconcileSessionWithScreenState()
+        return START_STICKY
     }
 
     private fun registerScreenStateReceiver() {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                when (intent?.action) {
-                    Intent.ACTION_SCREEN_OFF -> lockSession()
-                    Intent.ACTION_SCREEN_ON -> synchronizeSessionWithScreenState()
-                    Intent.ACTION_USER_PRESENT -> unlockSession()
+                val action = intent?.action
+                if (action == Intent.ACTION_SCREEN_OFF) {
+                    lockSession()
+                } else {
+                    reconcileSessionWithScreenState()
                 }
             }
         }
@@ -89,39 +105,46 @@ class SessionMonitorForegroundService : Service() {
             addAction(Intent.ACTION_USER_PRESENT)
         }
         screenStateReceiver = receiver
-        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_EXPORTED)
     }
 
-    private fun synchronizeSessionWithScreenState() {
-        if (isPhoneUnlocked()) {
-            sessionStatsRepository.beginSession()
-        } else {
-            sessionStatsRepository.endSession()
+    private fun reconcileSessionWithScreenState() {
+        when (sessionStatsRepository.resolveSessionScreenAction(currentScreenState())) {
+            SessionScreenAction.Begin -> beginSession()
+            SessionScreenAction.End -> endSession()
+            SessionScreenAction.None -> Unit
         }
+    }
+
+    private fun beginSession() {
+        sessionStatsRepository.beginSession()
         appContainer.calculateReelHeuristicsUseCase.reset()
     }
 
-    private fun lockSession() {
+    private fun endSession() {
         sessionStatsRepository.endSession()
         appContainer.calculateReelHeuristicsUseCase.reset()
         overlayController.dismissOverlay()
     }
 
-    private fun unlockSession() {
-        sessionStatsRepository.beginSession()
-        appContainer.calculateReelHeuristicsUseCase.reset()
+    private fun lockSession() {
+        endSession()
     }
 
-    private fun isPhoneUnlocked(): Boolean {
+    private fun currentScreenState(): DeviceScreenState {
         val powerManager = getSystemService(PowerManager::class.java)
         val keyguardManager = getSystemService(KeyguardManager::class.java)
-        return powerManager?.isInteractive == true && keyguardManager?.isKeyguardLocked == false
+        return DeviceScreenState(
+            isInteractive = powerManager?.isInteractive == true,
+            isDeviceLocked = keyguardManager?.isDeviceLocked == true
+        )
     }
 
     private fun startMonitoringLoop() {
         serviceScope.launch {
             while (true) {
                 try {
+                    reconcileSessionWithScreenState()
                     val profile = appContainer.settingsRepository.getUserProfile().first()
                     val stats = sessionStatsRepository.sessionStatsState.value
 

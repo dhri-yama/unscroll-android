@@ -18,10 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.unscroll.app.ui.components.CyberCheckBox
 import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.components.CyberStatusChip
+import com.unscroll.app.ui.components.glitchFlicker
+import com.unscroll.app.ui.components.glitchFrame
+import com.unscroll.app.ui.components.glitchShimmer
+import com.unscroll.app.ui.components.glitchSlices
 import com.unscroll.app.ui.theme.CyberLine
 import com.unscroll.app.ui.theme.CyberPanel
 import com.unscroll.app.ui.theme.CyberMuted
@@ -94,17 +99,38 @@ fun TargetAppPickerStep(
         ) {
             items(DEFAULT_APPS, key = { it.pkg }) { app ->
                 val isSelected = selectedPackages.contains(app.pkg)
+                val frame = glitchFrame(app.pkg.hashCode(), gain = if (isSelected) 1.15f else 0.45f)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(if (isSelected) CyberSurface else CyberPanel, RoundedCornerShape(0.dp))
                         .border(1.dp, if (isSelected) CyberWhite else CyberLine, RoundedCornerShape(0.dp))
+                        .glitchShimmer(
+                            frame = frame,
+                            activeColor = CyberWhite,
+                            idleColor = CyberWhite,
+                            minAlpha = 0.45f,
+                            maxShiftDp = if (isSelected) 2.6f else 1f,
+                            verticalShiftDp = 0.6f
+                        )
+                        .glitchSlices(frame = frame, strength = 0.5f)
                         .clickable { onTogglePackage(app.pkg) }
                         .padding(horizontal = 14.dp, vertical = 13.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .glitchShimmer(
+                                frame = frame,
+                                activeColor = CyberWhite,
+                                idleColor = CyberWhite,
+                                minAlpha = 0.45f,
+                                maxShiftDp = 1.4f,
+                                verticalShiftDp = 0.4f
+                            )
+                    ) {
                         Text(
                             text = app.name,
                             style = MaterialTheme.typography.titleMedium,
@@ -113,16 +139,19 @@ fun TargetAppPickerStep(
                         Text(
                             text = app.pkg,
                             style = MaterialTheme.typography.labelSmall,
-                            color = CyberMuted
+                            color = CyberMuted,
+                            modifier = Modifier
+                                .clearAndSetSemantics { }
                         )
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CyberStatusChip(
                             text = if (isSelected) "ARMED" else "IDLE",
-                            active = isSelected
+                            active = isSelected,
+                            glitchSeed = app.pkg.hashCode()
                         )
                         Spacer(modifier = Modifier.padding(horizontal = 10.dp))
-                        CyberCheckBox(checked = isSelected)
+                        CyberCheckBox(checked = isSelected, glitchSeed = app.pkg.hashCode() + 7)
                     }
                 }
             }

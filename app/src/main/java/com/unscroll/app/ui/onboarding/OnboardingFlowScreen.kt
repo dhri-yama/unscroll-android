@@ -24,6 +24,9 @@ import com.unscroll.app.ui.components.CyberButtonStyle
 import com.unscroll.app.ui.components.CyberProgressRail
 import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.components.GlassmorphicPillButton
+import com.unscroll.app.ui.components.glitchFrame
+import com.unscroll.app.ui.components.glitchJitter
+import com.unscroll.app.ui.components.glitchSlices
 import com.unscroll.app.ui.onboarding.steps.CadenceSetupStep
 import com.unscroll.app.ui.onboarding.steps.NamePersonalizationStep
 import com.unscroll.app.ui.onboarding.steps.PermissionsWizardStep
@@ -50,13 +53,17 @@ fun OnboardingFlowScreen(
                 .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(horizontal = 20.dp, vertical = 18.dp)
         ) {
+            val stepFrame = glitchFrame(0x4D11 + uiState.currentStep * 131, gain = 1.1f)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CyberSectionLabel(text = "UNSCROLL // INIT SEQUENCE")
-                CyberSectionLabel(text = "0${uiState.currentStep + 1} / 05")
+                CyberSectionLabel(
+                    text = "0${uiState.currentStep + 1} / 05",
+                    glitchSeed = 0x4D12 + uiState.currentStep * 131
+                )
             }
             Spacer(modifier = Modifier.padding(top = 12.dp))
             CyberProgressRail(
@@ -66,7 +73,9 @@ fun OnboardingFlowScreen(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .glitchSlices(frame = stepFrame, strength = 0.45f)
+                    .glitchJitter(frame = stepFrame, maxShiftDp = 1.4f, verticalShiftDp = 0.6f),
                 contentAlignment = Alignment.TopCenter
             ) {
                 when (uiState.currentStep) {

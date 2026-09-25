@@ -7,7 +7,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -37,6 +36,7 @@ fun AmbientBackground(
         ),
         label = "grid-phase"
     )
+    val frame = glitchFrame(0x8A31, gain = 1.1f)
 
     Box(modifier = modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -87,6 +87,62 @@ fun AmbientBackground(
                 topLeft = Offset(0f, 0f),
                 size = Size(size.width, 1.dp.toPx())
             )
+
+            if (frame.isActive) {
+                val intensity = frame.intensity
+                val bandCount = (1 + (intensity * 4f).toInt()).coerceIn(1, 5)
+                repeat(bandCount) { index ->
+                    val salt = 3 + index * 13
+                    val placement = GlitchNoise.sample(frame.seed, frame.step, salt = salt)
+                    val bandHeight = (6f + 30f * GlitchNoise.sample(frame.seed, frame.step, salt = salt + 1)).dp.toPx()
+                    val top = (size.height * placement).coerceIn(0f, (size.height - 1f).coerceAtLeast(0f))
+                    val bottom = (top + bandHeight).coerceAtMost(size.height)
+                    if (bottom - top < 1f) return@repeat
+
+                    drawRect(
+                        color = CyberWhite.copy(alpha = 0.035f + 0.06f * intensity),
+                        topLeft = Offset(0f, top),
+                        size = Size(size.width, bottom - top)
+                    )
+
+                    val shift = GlitchNoise.range(frame.seed, frame.step, -26f, 26f, salt = salt + 2).dp.toPx()
+                    val segments = 2 + index % 3
+                    repeat(segments) { segment ->
+                        val segmentPlacement = GlitchNoise.sample(frame.seed, frame.step, salt = salt + 3 + segment)
+                        val segmentWidth = (size.width * (0.08f + 0.3f * segmentPlacement))
+                        val segmentX = (size.width * segmentPlacement - segmentWidth / 2f)
+                            .coerceIn(0f, (size.width - segmentWidth).coerceAtLeast(0f))
+                        drawRect(
+                            color = CyberWhite.copy(alpha = 0.05f + 0.09f * intensity),
+                            topLeft = Offset(segmentX + shift, top),
+                            size = Size(segmentWidth, (bottom - top).coerceAtLeast(1f))
+                        )
+                    }
+
+                    drawLine(
+                        color = CyberWhite.copy(alpha = 0.25f + 0.4f * intensity),
+                        start = Offset(0f, top),
+                        end = Offset(size.width, top),
+                        strokeWidth = 1f
+                    )
+                }
+
+                if (intensity > 0.55f) {
+                    val tearShift = GlitchNoise.range(frame.seed, frame.step, -14f, 14f, salt = 41).dp.toPx()
+                    val tearY = GlitchNoise.sample(frame.seed, frame.step, salt = 42) * size.height
+                    drawRect(
+                        color = Color.Black.copy(alpha = 0.55f),
+                        topLeft = Offset(tearShift, tearY),
+                        size = Size(size.width, 3.dp.toPx())
+                    )
+                    drawLine(
+                        color = CyberWhite.copy(alpha = 0.6f),
+                        start = Offset(tearShift, tearY),
+                        end = Offset(tearShift + size.width, tearY),
+                        strokeWidth = 1f
+                    )
+                }
+            }
         }
         Box(modifier = Modifier.fillMaxSize()) {
             content()
