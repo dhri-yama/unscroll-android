@@ -6,9 +6,16 @@ class TrackScrollEventUseCase(
     private val sessionStatsRepository: SessionStatsRepository,
     private val calculateReelHeuristicsUseCase: CalculateReelHeuristicsUseCase
 ) {
-    operator fun invoke(deltaPx: Long, screenHeightPx: Int, timestampMillis: Long = System.currentTimeMillis()) {
+    operator fun invoke(
+        deltaPx: Long,
+        screenHeightPx: Int,
+        timestampMillis: Long = System.currentTimeMillis(),
+        sessionId: Long? = null
+    ) {
         if (deltaPx <= 0) return
+        val currentStats = sessionStatsRepository.sessionStatsState.value
+        if (!currentStats.isActive || (sessionId != null && sessionId != currentStats.sessionId)) return
         val isReel = calculateReelHeuristicsUseCase.isReelAdvance(deltaPx, screenHeightPx, timestampMillis)
-        sessionStatsRepository.recordScroll(deltaPx, isReel)
+        sessionStatsRepository.recordScroll(deltaPx, isReel, sessionId)
     }
 }

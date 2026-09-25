@@ -1,17 +1,23 @@
 package com.unscroll.app.service.monitor
 
+import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.app.usage.UsageStatsManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.unscroll.app.R
 import com.unscroll.app.UnscrollApplication
+import com.unscroll.app.di.AppContainer
+import com.unscroll.app.domain.repository.SessionStatsRepository
 import com.unscroll.app.domain.usecase.EvaluateOverlayTriggerUseCase
 import com.unscroll.app.domain.usecase.GetNextInsultUseCase
 import com.unscroll.app.service.overlay.WindowManagerOverlayController
@@ -26,14 +32,17 @@ import kotlinx.coroutines.launch
 class SessionMonitorForegroundService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private lateinit var appContainer: AppContainer
+    private lateinit var sessionStatsRepository: SessionStatsRepository
     private lateinit var overlayController: WindowManagerOverlayController
     private lateinit var getNextInsultUseCase: GetNextInsultUseCase
     private lateinit var evaluateOverlayTriggerUseCase: EvaluateOverlayTriggerUseCase
+    private var screenStateReceiver: BroadcastReceiver? = null
 
     companion object {
         private const val CHANNEL_ID = "unscroll_monitor_channel"
         private const val NOTIFICATION_ID = 1001
-        
+
         fun start(context: Context) {
             val intent = Intent(context, SessionMonitorForegroundService::class.java)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -51,51 +60,102 @@ class SessionMonitorForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val appContainer = (application as UnscrollApplication).container
+        appContainer = (application as UnscrollApplication).container
+        sessionStatsRepository = appContainer.sessionStatsRepository
         getNextInsultUseCase = appContainer.getNextInsultUseCase
         evaluateOverlayTriggerUseCase = appContainer.evaluateOverlayTriggerUseCase
         overlayController = WindowManagerOverlayController(this)
 
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
-
-        startMonitoringLoop(appContainer)
+        registerScreenStateReceiver()
+        synchronizeSessionWithScreenState()
+        startMonitoringLoop()
     }
 
-    private fun startMonitoringLoop(appContainer: com.unscroll.app.di.AppContainer) {
-        serviceScope.launch {
-            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+    private fun registerScreenStateReceiver() {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    Intent.ACTION_SCREEN_OFF -> lockSession()
+                    Intent.ACTION_SCREEN_ON -> synchronizeSessionWithScreenState()
+                    Intent.ACTION_USER_PRESENT -> unlockSession()
+                }
+            }
+        }
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
+        }
+        screenStateReceiver = receiver
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+    }
 
+    private fun synchronizeSessionWithScreenState() {
+        if (isPhoneUnlocked()) {
+            sessionStatsRepository.beginSession()
+        } else {
+            sessionStatsRepository.endSession()
+        }
+        appContainer.calculateReelHeuristicsUseCase.reset()
+    }
+
+    private fun lockSession() {
+        sessionStatsRepository.endSession()
+        appContainer.calculateReelHeuristicsUseCase.reset()
+        overlayController.dismissOverlay()
+    }
+
+    private fun unlockSession() {
+        sessionStatsRepository.beginSession()
+        appContainer.calculateReelHeuristicsUseCase.reset()
+    }
+
+    private fun isPhoneUnlocked(): Boolean {
+        val powerManager = getSystemService(PowerManager::class.java)
+        val keyguardManager = getSystemService(KeyguardManager::class.java)
+        return powerManager?.isInteractive == true && keyguardManager?.isKeyguardLocked == false
+    }
+
+    private fun startMonitoringLoop() {
+        serviceScope.launch {
             while (true) {
                 try {
                     val profile = appContainer.settingsRepository.getUserProfile().first()
-                    val trackedPackages = appContainer.settingsRepository.getTrackedPackageNames().first()
-                    val stats = appContainer.sessionStatsRepository.sessionStatsState.value
+                    val stats = sessionStatsRepository.sessionStatsState.value
 
-                    // Update active time spent from UsageStats
-                    val now = System.currentTimeMillis()
-                    val activeTime = (now - stats.sessionStartMillis).coerceAtLeast(0L)
-                    appContainer.sessionStatsRepository.updateTimeSpent(activeTime)
+                    if (stats.isActive) {
+                        val now = System.currentTimeMillis()
+                        val activeTime = (now - stats.sessionStartMillis).coerceAtLeast(0L)
+                        sessionStatsRepository.updateTimeSpent(activeTime, stats.sessionId)
 
-                    val updatedStats = appContainer.sessionStatsRepository.sessionStatsState.value
-                    val shouldTrigger = evaluateOverlayTriggerUseCase(
-                        stats = updatedStats,
-                        intervalMinutes = profile.interruptionIntervalMinutes,
-                        currentTimeMillis = now
-                    )
-
-                    if (shouldTrigger && !overlayController.isOverlayShowing()) {
-                        val insult = getNextInsultUseCase()
-                        appContainer.sessionStatsRepository.updateLastOverlayTriggered(now)
-
-                        launch(Dispatchers.Main) {
-                            overlayController.showOverlay(
+                        val updatedStats = sessionStatsRepository.sessionStatsState.value
+                        if (updatedStats.isActive && updatedStats.sessionId == stats.sessionId) {
+                            val shouldTrigger = evaluateOverlayTriggerUseCase(
                                 stats = updatedStats,
-                                insult = insult,
-                                onDismiss = {
-                                    // Resets or continues monitoring loop
-                                }
+                                intervalMinutes = profile.interruptionIntervalMinutes,
+                                currentTimeMillis = now
                             )
+
+                            if (shouldTrigger && !overlayController.isOverlayShowing()) {
+                                val insult = getNextInsultUseCase()
+                                sessionStatsRepository.updateLastOverlayTriggered(now, updatedStats.sessionId)
+
+                                launch(Dispatchers.Main) {
+                                    val latestStats = sessionStatsRepository.sessionStatsState.value
+                                    if (latestStats.isActive &&
+                                        latestStats.sessionId == updatedStats.sessionId &&
+                                        !overlayController.isOverlayShowing()
+                                    ) {
+                                        overlayController.showOverlay(
+                                            stats = updatedStats,
+                                            insult = insult,
+                                            onDismiss = {}
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 } catch (e: Exception) {
@@ -133,8 +193,12 @@ class SessionMonitorForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
-        super.onDestroy()
+        screenStateReceiver?.let { receiver ->
+            runCatching { unregisterReceiver(receiver) }
+        }
+        screenStateReceiver = null
         serviceScope.cancel()
         overlayController.dismissOverlay()
+        super.onDestroy()
     }
 }

@@ -6,7 +6,9 @@ data class SessionStats(
     val totalScrollsCount: Long = 0L,
     val totalScrollDistancePx: Long = 0L,
     val estimatedReelsCount: Long = 0L,
-    val lastOverlayTriggeredMillis: Long = 0L
+    val lastOverlayTriggeredMillis: Long = 0L,
+    val isActive: Boolean = true,
+    val sessionId: Long = 0L
 ) {
     fun getScrollDistanceMeters(densityDpi: Int = 420): Float {
         if (densityDpi <= 0) return 0f

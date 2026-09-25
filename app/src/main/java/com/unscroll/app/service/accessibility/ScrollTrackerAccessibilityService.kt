@@ -7,6 +7,7 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import com.unscroll.app.UnscrollApplication
+import com.unscroll.app.domain.repository.SessionStatsRepository
 import com.unscroll.app.domain.usecase.TrackScrollEventUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,9 @@ class ScrollTrackerAccessibilityService : AccessibilityService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
     private var trackedPackages: Set<String> = emptySet()
     private var screenHeightPx: Int = 2340
+    private var observedSessionId: Long? = null
 
+    private lateinit var sessionStatsRepository: SessionStatsRepository
     private lateinit var trackScrollEventUseCase: TrackScrollEventUseCase
     private lateinit var distanceCalculator: ScrollEventDistanceCalculator
     private lateinit var gestureAccumulator: ScrollGestureAccumulator
@@ -30,6 +33,7 @@ class ScrollTrackerAccessibilityService : AccessibilityService() {
     override fun onCreate() {
         super.onCreate()
         val appContainer = (application as UnscrollApplication).container
+        sessionStatsRepository = appContainer.sessionStatsRepository
         trackScrollEventUseCase = appContainer.trackScrollEventUseCase
 
         val displayMetrics = DisplayMetrics()
@@ -47,10 +51,24 @@ class ScrollTrackerAccessibilityService : AccessibilityService() {
                 trackedPackages = packages
             }
         }
+        serviceScope.launch {
+            sessionStatsRepository.sessionStatsState.collect { stats ->
+                val previousSessionId = observedSessionId
+                observedSessionId = stats.sessionId
+                if (previousSessionId != null && previousSessionId != stats.sessionId) {
+                    discardPendingGestures()
+                    distanceCalculator.clear()
+                    appContainer.calculateReelHeuristicsUseCase.reset()
+                }
+            }
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null || event.eventType != AccessibilityEvent.TYPE_VIEW_SCROLLED) return
+
+        val stats = sessionStatsRepository.sessionStatsState.value
+        if (!stats.isActive) return
 
         val packageName = event.packageName?.toString() ?: return
         if (!trackedPackages.contains(packageName)) return
@@ -75,28 +93,31 @@ class ScrollTrackerAccessibilityService : AccessibilityService() {
         if (deltaPx <= 0L) return
 
         val eventTimestamp = event.eventTime.takeIf { it > 0L } ?: SystemClock.uptimeMillis()
+        val sessionId = stats.sessionId
         gestureFlushJobs.remove(sourceKey)?.cancel()
         gestureAccumulator.add(
             sourceKey = sourceKey,
             distancePx = deltaPx,
-            timestampMillis = eventTimestamp
+            timestampMillis = eventTimestamp,
+            sessionId = sessionId
         )?.let { gesture -> recordGesture(gesture) }
         gestureFlushJobs[sourceKey] = serviceScope.launch {
             delay(GESTURE_IDLE_MS)
-            completeGesture(sourceKey)
+            completeGesture(sourceKey, sessionId)
         }
     }
 
-    private fun completeGesture(sourceKey: String) {
+    private fun completeGesture(sourceKey: String, sessionId: Long) {
         gestureFlushJobs.remove(sourceKey)?.cancel()
-        gestureAccumulator.complete(sourceKey)?.let { gesture -> recordGesture(gesture) }
+        gestureAccumulator.complete(sourceKey, sessionId)?.let { gesture -> recordGesture(gesture) }
     }
 
     private fun recordGesture(gesture: ScrollGesture) {
         trackScrollEventUseCase(
             deltaPx = gesture.distancePx,
             screenHeightPx = screenHeightPx,
-            timestampMillis = gesture.lastEventTimestampMillis
+            timestampMillis = gesture.lastEventTimestampMillis,
+            sessionId = gesture.sessionId
         )
     }
 
@@ -105,6 +126,14 @@ class ScrollTrackerAccessibilityService : AccessibilityService() {
         gestureFlushJobs.clear()
         if (::gestureAccumulator.isInitialized) {
             gestureAccumulator.completeAll().forEach { gesture -> recordGesture(gesture) }
+        }
+    }
+
+    private fun discardPendingGestures() {
+        gestureFlushJobs.values.forEach { it.cancel() }
+        gestureFlushJobs.clear()
+        if (::gestureAccumulator.isInitialized) {
+            gestureAccumulator.clear()
         }
     }
 

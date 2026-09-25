@@ -201,16 +201,23 @@ fun LiveSessionDashboardTab(
     } else {
         "${(meters * 100).toInt()}cm"
     }
-    var nowMillis by remember(sessionStats.sessionStartMillis) {
+    var nowMillis by remember(sessionStats.sessionStartMillis, sessionStats.isActive) {
         mutableLongStateOf(System.currentTimeMillis())
     }
-    LaunchedEffect(sessionStats.sessionStartMillis) {
-        while (true) {
+    LaunchedEffect(sessionStats.sessionStartMillis, sessionStats.isActive) {
+        while (sessionStats.isActive) {
             nowMillis = System.currentTimeMillis()
             delay(1_000L)
         }
     }
-    val elapsedMillis = (nowMillis - sessionStats.sessionStartMillis).coerceAtLeast(0L)
+    val elapsedMillis = if (sessionStats.isActive) {
+        maxOf(
+            sessionStats.totalTimeSpentMillis,
+            nowMillis - sessionStats.sessionStartMillis
+        ).coerceAtLeast(0L)
+    } else {
+        0L
+    }
     val activeTimeText = formatElapsedTime(elapsedMillis)
 
     Column(
@@ -233,7 +240,10 @@ fun LiveSessionDashboardTab(
                     color = CyberWhite
                 )
             }
-            CyberStatusChip(text = "LIVE", active = true)
+            CyberStatusChip(
+                text = if (sessionStats.isActive) "LIVE" else "STANDBY",
+                active = sessionStats.isActive
+            )
         }
         Spacer(modifier = Modifier.padding(top = 22.dp))
         CyberPanel(modifier = Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(18.dp)) {

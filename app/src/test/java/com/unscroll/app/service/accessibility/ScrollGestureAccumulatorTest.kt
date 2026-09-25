@@ -47,4 +47,19 @@ class ScrollGestureAccumulatorTest {
         assertEquals(30L, gestures.sumOf { it.distancePx })
         assertNull(accumulator.complete("first"))
     }
+
+    @Test
+    fun separatesGesturesAcrossSessions() {
+        val accumulator = ScrollGestureAccumulator(idleTimeMillis = 450L)
+
+        accumulator.add("feed", 10L, 100L, sessionId = 1L)
+        val completedGesture = accumulator.add("feed", 20L, 200L, sessionId = 2L)
+        val currentGesture = accumulator.complete("feed", sessionId = 2L)
+
+        assertNotNull(completedGesture)
+        assertEquals(1L, completedGesture?.sessionId)
+        assertNotNull(currentGesture)
+        assertEquals(2L, currentGesture?.sessionId)
+        assertEquals(20L, currentGesture?.distancePx)
+    }
 }

@@ -8,7 +8,7 @@ class EvaluateOverlayTriggerUseCase {
         intervalMinutes: Int,
         currentTimeMillis: Long = System.currentTimeMillis()
     ): Boolean {
-        if (intervalMinutes <= 0) return false
+        if (!stats.isActive || intervalMinutes <= 0) return false
         val intervalMillis = intervalMinutes * 60 * 1000L
         val timeSinceLastTrigger = currentTimeMillis - stats.lastOverlayTriggeredMillis
         val activeSessionDuration = currentTimeMillis - stats.sessionStartMillis

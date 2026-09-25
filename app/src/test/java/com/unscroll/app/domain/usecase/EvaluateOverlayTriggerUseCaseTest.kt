@@ -35,4 +35,14 @@ class EvaluateOverlayTriggerUseCaseTest {
 
         assertFalse(useCase(stats, intervalMinutes = 0, currentTimeMillis = sessionStartMillis + 60_000L))
     }
+
+    @Test
+    fun doesNotTriggerForInactiveSessions() {
+        val stats = SessionStats(
+            sessionStartMillis = sessionStartMillis,
+            isActive = false
+        )
+
+        assertFalse(useCase(stats, intervalMinutes = 1, currentTimeMillis = sessionStartMillis + 60_000L))
+    }
 }

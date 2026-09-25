@@ -5,8 +5,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface SessionStatsRepository {
     val sessionStatsState: StateFlow<SessionStats>
-    fun recordScroll(deltaPx: Long, isReelAdvance: Boolean)
-    fun updateTimeSpent(activeTimeMillis: Long)
-    fun updateLastOverlayTriggered(timestampMillis: Long)
+    fun recordScroll(deltaPx: Long, isReelAdvance: Boolean, sessionId: Long? = null)
+    fun updateTimeSpent(activeTimeMillis: Long, sessionId: Long? = null)
+    fun updateLastOverlayTriggered(timestampMillis: Long, sessionId: Long? = null)
     fun resetSession()
+    fun beginSession()
+    fun endSession()
 }
