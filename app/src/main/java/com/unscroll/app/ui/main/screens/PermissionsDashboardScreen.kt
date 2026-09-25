@@ -3,20 +3,20 @@ package com.unscroll.app.ui.main.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.unscroll.app.service.monitor.SessionMonitorForegroundService
+import com.unscroll.app.ui.components.CyberButtonStyle
+import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.components.GlassmorphicPillButton
 import com.unscroll.app.ui.onboarding.steps.PermissionsWizardStep
-import com.unscroll.app.ui.theme.TextPrimaryWhite
+import com.unscroll.app.ui.theme.CyberMuted
+import com.unscroll.app.ui.theme.CyberWhite
 
 @Composable
 fun PermissionsDashboardScreen(
@@ -31,33 +31,40 @@ fun PermissionsDashboardScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        CyberSectionLabel(text = "CONFIG // SYSTEM CHANNELS")
+        Spacer(modifier = Modifier.padding(top = 10.dp))
         Text(
-            text = "Service Controls & Status",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimaryWhite
+            text = "Keep the channels open.",
+            style = MaterialTheme.typography.headlineMedium,
+            color = CyberWhite
         )
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.padding(top = 6.dp))
+        Text(
+            text = "Unscroll needs these local capabilities to observe, interpret, and interrupt the loop.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = CyberMuted
+        )
+        Spacer(modifier = Modifier.padding(top = 12.dp))
         PermissionsWizardStep(
             isUsageGranted = isUsageGranted,
             isOverlayGranted = isOverlayGranted,
             isA11yGranted = isA11yGranted,
-            onCheckPermissions = onRefreshPermissions
+            onCheckPermissions = onRefreshPermissions,
+            modifier = Modifier
+                .weight(1f),
+            showHeader = false
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.padding(top = 12.dp))
         GlassmorphicPillButton(
-            text = "Restart Monitoring Service",
+            text = "Restart monitoring service",
             onClick = {
                 SessionMonitorForegroundService.stop(context)
                 SessionMonitorForegroundService.start(context)
-            }
+            },
+            iconPrefix = "[R]",
+            style = CyberButtonStyle.Outlined
         )
     }
 }

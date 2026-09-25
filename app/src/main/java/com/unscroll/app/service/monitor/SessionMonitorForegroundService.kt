@@ -111,10 +111,10 @@ class SessionMonitorForegroundService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Unscroll Monitoring Service",
+                "UNSCROLL // SIGNAL WATCH",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Monitors active app usage and intervention triggers"
+                description = "Monitors scroll telemetry and deploys intervention protocols"
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(channel)
@@ -123,8 +123,8 @@ class SessionMonitorForegroundService : Service() {
 
     private fun buildNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Unscroll Active")
-            .setContentText("Monitoring doomscrolling sessions")
+            .setContentTitle("UNSCROLL // SIGNAL WATCH")
+            .setContentText("Monitoring scroll loops // awaiting operator")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)

@@ -4,19 +4,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.unscroll.app.ui.theme.TextPrimaryWhite
-import com.unscroll.app.ui.theme.TextSecondaryMuted
-import com.unscroll.app.ui.theme.TickerGold
+import com.unscroll.app.ui.components.CyberPanel
+import com.unscroll.app.ui.components.CyberSectionLabel
+import com.unscroll.app.ui.components.GlitchText
+import com.unscroll.app.ui.theme.CyberMuted
+import com.unscroll.app.ui.theme.CyberWhite
 
 @Composable
 fun WelcomeStep(
@@ -25,28 +26,35 @@ fun WelcomeStep(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(horizontal = 20.dp, vertical = 28.dp),
+        horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = "Welcome to",
-            fontSize = 20.sp,
-            color = TextSecondaryMuted
+        CyberSectionLabel(text = "SYS // BOOT SEQUENCE")
+        Spacer(modifier = Modifier.padding(top = 18.dp))
+        GlitchText(
+            text = "UNSCROLL",
+            style = MaterialTheme.typography.displayLarge,
+            color = CyberWhite
         )
         Text(
-            text = "Unscroll",
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-            color = TickerGold
+            text = "// reclaim the signal",
+            style = MaterialTheme.typography.titleMedium,
+            color = CyberMuted
         )
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Reclaim your time from endless reels and shorts.\n\nUnscroll tracks your doomscrolling habits and intervenes with personalized wake-up overlays before your time evaporates.",
-            fontSize = 17.sp,
-            color = TextPrimaryWhite,
-            textAlign = TextAlign.Center,
-            lineHeight = 24.sp
-        )
+        Spacer(modifier = Modifier.padding(top = 30.dp))
+        CyberPanel(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Your attention is a finite resource. Unscroll detects the scroll loop, interrupts the signal, and returns control to the operator.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = CyberWhite
+            )
+            Spacer(modifier = Modifier.padding(top = 14.dp))
+            Text(
+                text = "NO FEED. NO ALGORITHM. JUST THE NEXT CHOICE.",
+                style = MaterialTheme.typography.labelSmall,
+                color = CyberMuted
+            )
+        }
     }
 }

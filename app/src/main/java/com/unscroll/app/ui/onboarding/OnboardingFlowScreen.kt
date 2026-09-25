@@ -1,36 +1,34 @@
 package com.unscroll.app.ui.onboarding
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.unscroll.app.ui.components.AmbientBackground
+import com.unscroll.app.ui.components.CyberButtonStyle
+import com.unscroll.app.ui.components.CyberProgressRail
+import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.components.GlassmorphicPillButton
 import com.unscroll.app.ui.onboarding.steps.CadenceSetupStep
 import com.unscroll.app.ui.onboarding.steps.NamePersonalizationStep
 import com.unscroll.app.ui.onboarding.steps.PermissionsWizardStep
 import com.unscroll.app.ui.onboarding.steps.TargetAppPickerStep
 import com.unscroll.app.ui.onboarding.steps.WelcomeStep
-import com.unscroll.app.ui.theme.GlassPillBackground
-import com.unscroll.app.ui.theme.TickerGold
 
 @Composable
 fun OnboardingFlowScreen(
@@ -49,35 +47,27 @@ fun OnboardingFlowScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(horizontal = 20.dp, vertical = 18.dp)
         ) {
-            // Step Indicators
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 36.dp),
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                (0..4).forEach { index ->
-                    val isCurrent = index == uiState.currentStep
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(if (isCurrent) 10.dp else 8.dp)
-                            .clip(CircleShape)
-                            .background(if (isCurrent) TickerGold else GlassPillBackground)
-                    )
-                }
+                CyberSectionLabel(text = "UNSCROLL // INIT SEQUENCE")
+                CyberSectionLabel(text = "0${uiState.currentStep + 1} / 05")
             }
-
-            // Step Content
+            Spacer(modifier = Modifier.padding(top = 12.dp))
+            CyberProgressRail(
+                currentStep = uiState.currentStep,
+                totalSteps = 5
+            )
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.TopCenter
             ) {
                 when (uiState.currentStep) {
                     0 -> WelcomeStep()
@@ -99,38 +89,39 @@ fun OnboardingFlowScreen(
                         selectedInterval = uiState.interruptionIntervalMinutes,
                         onSelectInterval = viewModel::updateInterval
                     )
+                    else -> WelcomeStep()
                 }
             }
-
-            // Bottom Navigation Buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (uiState.currentStep > 0) {
                     GlassmorphicPillButton(
                         text = "Back",
-                        onClick = { viewModel.setStep(uiState.currentStep - 1) }
+                        onClick = { viewModel.setStep(uiState.currentStep - 1) },
+                        style = CyberButtonStyle.Outlined
                     )
                 } else {
-                    Spacer(modifier = Modifier.width(1.dp))
+                    Spacer(modifier = Modifier)
                 }
-
                 if (uiState.currentStep < 4) {
                     GlassmorphicPillButton(
                         text = "Next",
-                        onClick = { viewModel.setStep(uiState.currentStep + 1) }
+                        onClick = { viewModel.setStep(uiState.currentStep + 1) },
+                        iconPrefix = ">",
+                        style = CyberButtonStyle.Filled
                     )
                 } else {
                     GlassmorphicPillButton(
-                        text = "Start Reckoning",
+                        text = "Initiate reckoning",
                         onClick = {
                             viewModel.completeOnboarding(context)
                             onOnboardingFinished()
-                        }
+                        },
+                        iconPrefix = "[+]",
+                        style = CyberButtonStyle.Filled
                     )
                 }
             }

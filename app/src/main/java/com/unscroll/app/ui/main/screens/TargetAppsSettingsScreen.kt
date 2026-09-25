@@ -3,17 +3,17 @@ package com.unscroll.app.ui.main.screens
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.unscroll.app.ui.components.CyberSectionLabel
 import com.unscroll.app.ui.onboarding.steps.TargetAppPickerStep
-import com.unscroll.app.ui.theme.TextPrimaryWhite
+import com.unscroll.app.ui.theme.CyberMuted
+import com.unscroll.app.ui.theme.CyberWhite
 
 @Composable
 fun TargetAppsSettingsScreen(
@@ -24,21 +24,29 @@ fun TargetAppsSettingsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        CyberSectionLabel(text = "CONFIG // TARGET NODES")
+        Spacer(modifier = Modifier.padding(top = 10.dp))
         Text(
-            text = "Tracked Doomscrolling Apps",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimaryWhite
+            text = "Choose the apps under watch.",
+            style = MaterialTheme.typography.headlineMedium,
+            color = CyberWhite
         )
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.padding(top = 6.dp))
+        Text(
+            text = "The observer only activates inside armed targets.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = CyberMuted
+        )
+        Spacer(modifier = Modifier.padding(top = 12.dp))
         TargetAppPickerStep(
             selectedPackages = selectedPackages,
-            onTogglePackage = onTogglePackage
+            onTogglePackage = onTogglePackage,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            showHeader = false
         )
     }
 }

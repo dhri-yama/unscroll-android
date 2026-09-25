@@ -39,7 +39,7 @@
         <!-- Accessibility Scroll Tracking Service -->
         <service
             android:name=".service.accessibility.ScrollTrackerAccessibilityService"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/accessibility_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>

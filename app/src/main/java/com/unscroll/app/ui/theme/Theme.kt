@@ -5,12 +5,22 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = TickerGold,
-    secondary = TextSecondaryMuted,
-    background = AmbientDarkBackground,
-    surface = GlassPillBackground,
-    onBackground = TextPrimaryWhite,
-    onSurface = TextPrimaryWhite
+    primary = CyberWhite,
+    onPrimary = CyberBlack,
+    secondary = CyberMuted,
+    onSecondary = CyberBlack,
+    tertiary = CyberSoft,
+    onTertiary = CyberBlack,
+    background = CyberBlack,
+    onBackground = CyberWhite,
+    surface = CyberSurface,
+    onSurface = CyberWhite,
+    surfaceVariant = CyberPanel,
+    onSurfaceVariant = CyberMuted,
+    outline = CyberLine,
+    outlineVariant = CyberDim,
+    error = CyberWhite,
+    onError = CyberBlack
 )
 
 @Composable
