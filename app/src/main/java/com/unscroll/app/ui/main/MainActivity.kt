@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unscroll.app.UnscrollApplication
+import com.unscroll.app.domain.model.formatElapsedTime
 import com.unscroll.app.ui.components.AmbientBackground
 import com.unscroll.app.ui.components.CyberBottomNav
 import com.unscroll.app.ui.components.CyberMetric
@@ -57,6 +59,7 @@ import com.unscroll.app.ui.theme.CyberMuted
 import com.unscroll.app.ui.theme.CyberSoft
 import com.unscroll.app.ui.theme.CyberWhite
 import com.unscroll.app.ui.theme.UnscrollTheme
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
@@ -198,7 +201,17 @@ fun LiveSessionDashboardTab(
     } else {
         "${(meters * 100).toInt()}cm"
     }
-    val activeMinutes = sessionStats.totalTimeSpentMillis / (1000 * 60)
+    var nowMillis by remember(sessionStats.sessionStartMillis) {
+        mutableLongStateOf(System.currentTimeMillis())
+    }
+    LaunchedEffect(sessionStats.sessionStartMillis) {
+        while (true) {
+            nowMillis = System.currentTimeMillis()
+            delay(1_000L)
+        }
+    }
+    val elapsedMillis = (nowMillis - sessionStats.sessionStartMillis).coerceAtLeast(0L)
+    val activeTimeText = formatElapsedTime(elapsedMillis)
 
     Column(
         modifier = modifier
@@ -258,8 +271,8 @@ fun LiveSessionDashboardTab(
                     modifier = Modifier.weight(1f)
                 )
                 CyberMetric(
-                    value = "${activeMinutes}m",
-                    label = "Active",
+                    value = activeTimeText,
+                    label = "Elapsed",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -270,7 +283,7 @@ fun LiveSessionDashboardTab(
             Spacer(modifier = Modifier.padding(top = 12.dp))
             TelemetryRow("GESTURES DETECTED", sessionStats.totalScrollsCount.toString().padStart(2, '0'))
             TelemetryRow("DISTANCE LOGGED", distanceText)
-            TelemetryRow("TIME IN LOOP", "${activeMinutes.toString().padStart(2, '0')} MINUTES")
+            TelemetryRow("TIME IN LOOP", activeTimeText)
             TelemetryRow("STATUS", "SIGNAL STABLE")
         }
         Spacer(modifier = Modifier.padding(top = 18.dp))

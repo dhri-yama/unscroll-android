@@ -68,8 +68,6 @@ class SessionMonitorForegroundService : Service() {
 
             while (true) {
                 try {
-                    delay(30_000L) // Check every 30 seconds
-
                     val profile = appContainer.settingsRepository.getUserProfile().first()
                     val trackedPackages = appContainer.settingsRepository.getTrackedPackageNames().first()
                     val stats = appContainer.sessionStatsRepository.sessionStatsState.value
@@ -103,6 +101,7 @@ class SessionMonitorForegroundService : Service() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+                delay(1_000L)
             }
         }
     }

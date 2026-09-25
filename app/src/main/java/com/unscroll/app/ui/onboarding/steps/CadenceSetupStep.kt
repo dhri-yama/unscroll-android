@@ -28,7 +28,7 @@ import com.unscroll.app.ui.theme.CyberPanel
 import com.unscroll.app.ui.theme.CyberSoft
 import com.unscroll.app.ui.theme.CyberWhite
 
-val INTERVAL_OPTIONS = listOf(5, 10, 15, 20, 30)
+val INTERVAL_OPTIONS = listOf(1, 5, 10, 15, 20, 30)
 
 @Composable
 fun CadenceSetupStep(

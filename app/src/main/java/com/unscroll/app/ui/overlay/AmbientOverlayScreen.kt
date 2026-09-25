@@ -181,14 +181,14 @@ fun AmbientOverlayScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 GlassmorphicPillButton(
-                    text = "Abort loop",
+                    text = "I'm a PUSSY",
                     onClick = onSkipClick,
                     modifier = Modifier.weight(1f),
                     iconPrefix = ">>",
                     style = CyberButtonStyle.Filled
                 )
                 GlassmorphicPillButton(
-                    text = "Lock screen",
+                    text = "I'm an ASS",
                     onClick = onLockScreenClick,
                     modifier = Modifier.weight(1f),
                     iconPrefix = "[L]",
